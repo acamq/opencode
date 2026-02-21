@@ -38,6 +38,7 @@ import { ArgsProvider, useArgs, type Args } from "./context/args"
 import open from "open"
 import { writeHeapSnapshot } from "v8"
 import { PromptRefProvider, usePromptRef } from "./context/prompt"
+import { Notify } from "./util/notify"
 
 async function getTerminalBackgroundColor(): Promise<"dark" | "light"> {
   // can't set raw mode if not a TTY
@@ -686,6 +687,17 @@ function App() {
       type: "session",
       sessionID: evt.properties.sessionID,
     })
+  })
+
+  sdk.event.on("permission.asked", (evt) => {
+    const message = `Agent needs permission: ${evt.properties.permission}`
+    Notify.system("Permission required", message)
+  })
+
+  sdk.event.on("question.asked", (evt) => {
+    const question = evt.properties.questions[0]?.question
+    const message = question ? `Agent asks: ${question}` : "Agent has a question"
+    Notify.system("Question", message)
   })
 
   sdk.event.on(SessionApi.Event.Deleted.type, (evt) => {
